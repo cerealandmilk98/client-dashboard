@@ -15,6 +15,16 @@ const Clients = () => {
 
   const clientsRef = collection(db, "clients");
 
+  // ✅ Define the fetch function BEFORE using it
+  const fetchClients = async () => {
+    const snapshot = await getDocs(clientsRef);
+    const data = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setClients(data);
+  };
+
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!name || !email) return;
@@ -25,26 +35,18 @@ const Clients = () => {
     });
     setName("");
     setEmail("");
-    fetchClients(); // call after adding
+    fetchClients();
   };
 
   const handleDelete = async (id) => {
     await deleteDoc(doc(db, "clients", id));
-    fetchClients(); // call after deletion
+    fetchClients();
   };
 
+  // ✅ Now this will work because fetchClients is already defined
   useEffect(() => {
-    const fetchClients = async () => {
-      const snapshot = await getDocs(clientsRef);
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setClients(data);
-    };
-
-    fetchClients(); // call on mount
-  }, [clientsRef]); // it's safe to include clientsRef, but [] alone is also fine
+    fetchClients();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
